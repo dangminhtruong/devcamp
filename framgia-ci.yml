@@ -44,9 +44,9 @@ cache:
   gems:
     folder: vendor/bundle
     file: Gemfile.lock
-deploy:
-  capistrano_staging:
-    image: framgiaciteam/rails-deployer:1.0
-    when:
-      branch: master
-    run: cap production deploy
+#deploy:
+  #capistrano_staging:
+    #image: framgiaciteam/rails-deployer:1.0
+    #when:
+      #branch: master
+    #run: cap production deploy
