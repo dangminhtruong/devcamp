@@ -3,33 +3,40 @@ build:
   general_test:
     image: framgiaciteam/rails-workspace:2.5.1
     services:
-      mysql_test:
+      mysql:
         image: mysql:5.7
+        command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;'
         environment:
-          MYSQL_DATABASE: ats_test
           MYSQL_USER: test
           MYSQL_PASSWORD: test
-          MYSQL_ROOT_PASSWORD: root         
+          MYSQL_ROOT_PASSWORD: root
+      redis:
+        image: redis:3.0.7
+      elasticsearch:
+        image: elasticsearch:5.5
     prepare:
+      - framgia-ci test-connect mysql 3306 60
+      - framgia-ci test-connect elasticsearch 9200 60
       - cp config/database-ci.yml config/database.yml
+      - cp config/secrets-ci.yml config/secrets.yml
+      - cp config/settings-ci.yml config/settings.local.yml
       - bundle install --path vendor/bundle
-      - framgia-ci test-connect mysql_test 3306 60
-      - RAILS_ENV=test rake db:drop db:create db:migrate
+      - RAILS_ENV=test bundle exec rake db:create db:migrate
 test:
   bundle-audit:
-    ignore: true
+    ignore: false
     command: bundle-audit check --update > .framgia-ci-reports/bundle-audit.txt
   rspec:
-    ignore: true
+    ignore: false
     command: rspec --format html --out .framgia-ci-reports/rspec.html spec/
   brakeman:
-    ignore: true
+    ignore: false
     command: brakeman -o .framgia-ci-reports/brakeman.html -o .framgia-ci-reports/brakeman.json
   reek:
-    ignore: true
+    ignore: false
     command: echo '' | reek --format html > .framgia-ci-reports/reek.html
   rubocop:
-    ignore: true
+    ignore: false
     command: bundle exec rubocop --require rubocop/formatter/checkstyle_formatter --format RuboCop::Formatter::CheckstyleFormatter --no-color --rails --out .framgia-ci-reports/rubocop.xml app/ lib/
   scss-lint:
     ignore: true
@@ -37,16 +44,7 @@ test:
   eslint:
     ignore: true
     command: rake eslint:run_all format=checkstyle output_file=.framgia-ci-reports/eslint.xml app/
-  rails_best_practices:
-    ignore: true
-    command: rails_best_practices --format html --output-file .framgia-ci-reports/rails_best_practices.html app/
 cache:
   gems:
     folder: vendor/bundle
     file: Gemfile.lock
-#deploy:
-  #capistrano_staging:
-    #image: framgiaciteam/rails-deployer:1.0
-    #when:
-      #branch: master
-    #run: cap production deploy
