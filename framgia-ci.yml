@@ -29,9 +29,6 @@ test:
   rspec:
     ignore: false
     command: rspec --format html --out .framgia-ci-reports/rspec.html spec/
-  brakeman:
-    ignore: false
-    command: brakeman -o .framgia-ci-reports/brakeman.html -o .framgia-ci-reports/brakeman.json
   reek:
     ignore: false
     command: echo '' | reek --format html > .framgia-ci-reports/reek.html
